@@ -8,29 +8,30 @@ import Vue from 'vue'
 Vue.use(VueRouter)
 
 const Foo = {
-    render (h) {
-        return h('div', {}, 'foo')
-    }
+	render(h) {
+		return h('div', {}, 'foo')
+	}
 }
 const Bar = {
-    render (h) {
-        return h('div', {}, 'bar')
-    }
+	render(h) {
+		return h('div', {}, 'bar')
+	}
 }
 
 const routes = [
-    {
-        path: '/foo',
-        component: Foo
-    },
-    {
-        path: '/bar',
-        component: Bar
-    }
+	{
+		path: '/foo',
+		component: Foo
+	},
+	{
+		path: '/bar',
+		component: Bar
+	}
 ]
 
 const router = new VueRouter({
-    routes
+	mode: 'history',
+	routes
 })
 
 export default router

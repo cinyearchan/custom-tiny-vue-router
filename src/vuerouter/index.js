@@ -1,6 +1,10 @@
 /* eslint-disable no-mixed-spaces-and-tabs */
 let _Vue = null
 
+function checkMode (options) {
+	return options && options.mode && options.mode === 'history'
+}
+
 export default class VueRouter {
   static install (Vue) {
   	// eslint-disable-next-line no-mixed-spaces-and-tabs
@@ -25,7 +29,7 @@ export default class VueRouter {
 		this.options = options
 		this.routeMap = {}
 		this.data = _Vue.observable({
-			current: '/'
+			current: checkMode(this.options) ? '/' : '#/'
 		})
 	}
 
@@ -42,15 +46,18 @@ export default class VueRouter {
 	}
 
 	initComponents (Vue) {
+		const self = this
+
 		Vue.component('router-link', {
 			name: 'router-link',
 			props: {
 				to: String
 			},
 			render (h) {
+				// console.log(checkMode(self.options))
 				return h('a', {
 					attrs: {
-						href: this.to
+						href: checkMode(self.options) ? this.to : `#${this.to}`
 					},
 					on: {
 						click: this.clickHandler
@@ -60,26 +67,40 @@ export default class VueRouter {
 			// template: '<a :href="to"><slot></slot></a>'
 			methods: {
 				clickHandler (e) {
-					history.pushState({}, '', this.to)
+					if (checkMode(self.options)) {
+						history.pushState({}, '', this.to)
+					} else {
+						// console.log(this.to)
+						location.hash = this.to
+					}
+					
 					this.$router.data.current = this.to
 					e.preventDefault()
 				}
 			}
 		})
 
-		const self = this
+		
 		Vue.component('router-view', {
 			name: 'router-view',
 			render (h) {
-				const component = self.routeMap[self.data.current]
+				// console.log(self)
+
+				const component = self.routeMap[checkMode(self.options) ? self.data.current : self.data.current.slice(1) ]
 				return h(component)
 			}
 		})
 	}
 
 	initEvent() {
-		window.addEventListener('popstate', () => {
-			this.data.current = window.location.pathname
-		})
+		if (checkMode(this.options)) {
+			window.addEventListener('popstate', () => {
+				this.data.current = window.location.pathname
+			})
+		} else {
+			window.addEventListener('hashchange', () => {
+				this.data.current = window.location.hash
+			})
+		}
 	}
 }
